@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Mis Gastos</title>
+  
+  <link rel="manifest"href="manifest.json">
+  
+  <style>
+	  body{
+		background-color:#f2f2f2;
+        text-align:center;
+        font-family:Arial, sans-serif;
+        padding:10px;	  
+	  }
+	  
+	  input{
+		  width:90%;
+		  padding:15px;
+		  margin:8px;
+		  font-size:18px;
+		  box-sizing:border-box;
+		  border-radius:10px;
+	  }
+	  
+	  button{
+		  width:90%;
+		  padding:15px;
+		  margin:8px;
+		  font-size:18px;
+		  background-color:#4CAF50;
+		  color:white;
+		  border:none;
+		  border-radius:10px;
+	  }
+	  
+	  button:hover{
+		  background-color:#45a049;
+	  }	  
+   </style>
+</head>
+<body>
+	 
+   <h1>Mis Gastos</h1>
+   
+   <h2>Dinero disponible</h2>
+   <input type="number"id="dinero"placeholder="Cuanto dinero tenes">
+   <button onclick="guardarDinero()">Guardar dinero</button>
+   <p id="resultado"></p>
+   <p id="totalGastos">Total gastado:$0</p>
+   
+   <h2>Agregar gasto</h2>
+   
+   <input type="text"id="producto"placeholder="Que compraste">
+   <input type="number"id="gasto"placeholder="Cuanto gastaste">
+   <button onclick="agregarGastos()">Agregar gasto</button>
+   
+   <button onclick="borrarTodo()">Borrar todo</button>
+   <div id="listaGastos"></div>
+   
+   <script>
+   let saldoTotal = 0;
+   let totalGastos = 0;
+   let gastos=[];
+
+    function guardarDinero() {
+    const dinero = document.getElementById("dinero").value;
+
+    saldoTotal = parseFloat(dinero) || 0;
+
+    document.getElementById("resultado").textContent =
+        "Dinero disponible:$" + saldoTotal;
+
+    localStorage.setItem("saldoTotal", saldoTotal);
+}
+
+    function agregarGastos() {
+
+    const producto = document.getElementById("producto").value;
+    const gasto = parseFloat(document.getElementById("gasto").value) || 0;
+
+    if (producto !== "" && gasto > 0) {
+
+        saldoTotal -= gasto;
+        totalGastos += gasto;
+
+        document.getElementById("resultado").textContent =
+            "Dinero disponible:$" + saldoTotal;
+
+        document.getElementById("totalGastos").textContent =
+            "Total gastado:$" + totalGastos;
+            
+        gastos.push({
+			producto:producto,
+			gasto:gasto
+		});
+		
+		localStorage.setItem("gastos", JSON.stringify(gastos));
+       
+        mostrarGastos();
+         
+
+        localStorage.setItem("saldoTotal", saldoTotal);
+        localStorage.setItem("totalGastos", totalGastos);
+        localStorage.setItem(
+            "listaGastos",
+            document.getElementById("listaGastos").innerHTML
+        );
+
+        document.getElementById("producto").value = "";
+        document.getElementById("gasto").value = "";
+    }
+}
+
+function borrarTodo() {
+
+    if (confirm("¿Seguro que quieres borrar todos los datos?")) {
+
+        localStorage.clear();
+
+        saldoTotal = 0;
+        totalGastos = 0;
+
+        document.getElementById("resultado").textContent = "";
+        document.getElementById("totalGastos").textContent =
+            "Total gastado:$0";
+
+        document.getElementById("listaGastos").innerHTML = "";
+    }
+}
+        
+        function mostrarGastos() {
+
+    let html = "";
+
+    for (let i = 0; i < gastos.length; i++) {
+
+        html += "<p>" +
+            gastos[i].producto +
+            " ........ $" +
+            gastos[i].gasto +
+            " <button onclick='eliminarGasto(" + i + ")'>❌</button></p>";
+    }
+
+    document.getElementById("listaGastos").innerHTML = html;
+}
+    
+    function eliminarGasto(indice) {
+
+    let monto = gastos[indice].gasto;
+
+    saldoTotal += monto;
+    totalGastos -= monto;
+
+    gastos.splice(indice, 1);
+
+    document.getElementById("resultado").textContent =
+        "Dinero disponible:$" + saldoTotal;
+
+    document.getElementById("totalGastos").textContent =
+        "Total gastado:$" + totalGastos;
+  
+    localStorage.setItem("gastos", JSON.stringify(gastos));
+    
+    mostrarGastos();
+}
+
+
+window.onload = function() {
+
+    saldoTotal =
+        parseFloat(localStorage.getItem("saldoTotal")) || 0;
+
+    totalGastos =
+        parseFloat(localStorage.getItem("totalGastos")) || 0;
+
+    document.getElementById("resultado").textContent =
+        "Dinero disponible:$" + saldoTotal;
+
+    document.getElementById("totalGastos").textContent =
+        "Total gastado:$" + totalGastos;
+
+    gastos = JSON.parse(localStorage.getItem("gastos")) || [];
+
+    mostrarGastos();
+}
+</script>
+  
+   
+</body>
+</html>
